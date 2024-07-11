@@ -1,0 +1,39 @@
+name: Create Pull Request on Specific File Change
+
+on:
+  push:
+    paths:
+      - appsettings.json # Specify the file to watch for changes
+
+jobs:
+  create_pull_request:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up GitHub CLI
+      run: |
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+        sudo apt-add-repository https://cli.github.com/packages
+        sudo apt update
+        sudo apt install gh -y
+
+    - name: Authenticate with GitHub CLI
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+    - name: Create Pull Request
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$CURRENT_BRANCH" != "master" ]; then
+          BRANCH_NAME="auto-pr-${CURRENT_BRANCH}-$(date +%s)"
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          gh pr create --title "Automated PR for appsettings.json Change" --body "This pull request was created automatically by GitHub Actions because appsettings.json was changed." --head $BRANCH_NAME --base master
+        fi
