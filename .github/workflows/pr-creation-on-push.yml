@@ -22,14 +22,10 @@ jobs:
         sudo apt install gh -y
 
     - name: Authenticate with GitHub CLI
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
-        echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+        gh auth login --with-token <<< "${{ secrets.GH_TOKEN }}"
 
     - name: Create Pull Request
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
         if [ "$CURRENT_BRANCH" != "master" ]; then
@@ -37,4 +33,3 @@ jobs:
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
           gh pr create --title "Automated PR for appsettings.json Change" --body "This pull request was created automatically by GitHub Actions because appsettings.json was changed." --head $BRANCH_NAME --base master
-        fi
