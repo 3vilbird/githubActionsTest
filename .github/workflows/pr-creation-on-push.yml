@@ -14,11 +14,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up GitHub CLI
-      run: |
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-        sudo apt-add-repository https://cli.github.com/packages
-        sudo apt update
-        sudo apt install gh -y
+      uses: actions/setup-gh@v1
+      with:
+        token: ${{ secrets.GH_TOKEN }}
 
     - name: Authenticate with GitHub CLI
       env:
